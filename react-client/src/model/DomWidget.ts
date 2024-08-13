@@ -4,6 +4,5 @@ interface DomWidgetModel {
     domType: string;
     positionX: number;
     positionY: number;
-
+    width: string;
 }
-

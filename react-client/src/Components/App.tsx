@@ -8,11 +8,12 @@ import * as domUtils from "../utils/domUtils";
 import * as chromeExtensionUtils from "../utils/chromeExtensionUtils";
 import useLocalStorageStore from "../hooks/useLocalStorageStore";
 import GlobalContext from "../store/global-context";
-
+import axios from 'axios';
 import SwitchButton from "./Shared/buttons/SwitchButton";
 import BookmarkStore from "./Widgets/BookmarkStore";
 import DomMinimalDetailsWidget from "./Widgets/DOMMinimalDetailsWidget";
 
+// @ts-ignore
 window.store = {
     focusMode: false,
     switchExtensionFunctionality: true,
@@ -45,7 +46,7 @@ function App() {
     const [focusMode, setFocusMode] = useState(false);
     // If this is enabled, disable events like mouse hover. If user clicks outside of add bookmark component, then set `add bookmark mode` to false.
 
-    const [selectedElem, setSelectedElem] = useState({});
+    const [selectedElem, setSelectedElem] = useState<any>({});
     const [switchExtensionFunctionality, setExtensionFunctionality] =
         useState(true);
 
@@ -58,7 +59,7 @@ function App() {
     const [stateBookmarks, setStateBookmarks] = useState([]);
 
     const [domMinimalDetailsStyles, setDomMinimalDetailsStyles] = useState({
-        width: 0,
+        width: "",
         positionY: 100,
         positionX: 0,
     });
@@ -72,7 +73,7 @@ function App() {
         // END
 
         // removes border highlights added in DOM elements when it's clicked
-        domInfo.forEach((val) => {
+        domInfo.forEach((val: any) => {
             const currEl = document.querySelector(`[data-id="${val.dataId}"]`);
 
             if (!currEl) return;
@@ -84,6 +85,7 @@ function App() {
 
         setTimeout(() => {
             //remove left-over focused-dom highlights
+            // @ts-ignore
             [...document.querySelectorAll(".focused-dom")].forEach((el) =>
                 el.classList.remove("focused-dom")
             );
@@ -110,9 +112,9 @@ function App() {
             injectDOMEventInBody();
 
             chromeExtensionUtils.onMessageEvent(function (
-                msg,
-                sender,
-                sendResponse
+                msg: any,
+                sender: any,
+                sendResponse: any
             ) {
                 setExtensionFunctionality(true);
 
@@ -122,39 +124,43 @@ function App() {
             });
         }
 
-        return () => {};
+        return () => { };
     }, []);
 
     React.useEffect(() => {
         setStateBookmarks(bookmarksStore);
 
-        return () => {};
+        return () => { };
     }, [bookmarksStore]);
 
     React.useEffect(() => {
         //dirty way to get the value from state since normal JS event handlers cannot communicate the state well with React
+        // @ts-ignore
         window.store.switchExtensionFunctionality =
             switchExtensionFunctionality;
 
-        return () => {};
+        return () => { };
     }, [switchExtensionFunctionality]);
 
     React.useEffect(() => {
+        // @ts-ignore
         window.store.focusMode = focusMode;
 
-        return () => {};
+        return () => { };
     }, [focusMode]);
 
     React.useEffect(() => {
-        return () => {};
+        return () => { };
     }, [domInfo]);
 
     //#endregion Injectable event listeners
-    const documentOnClick = async (e) => {
+    const documentOnClick = async (e: any) => {
         e.preventDefault();
         if (!domUtils.isTrueTarget(e.target)) return;
+        // @ts-ignore
         if (window.store.focusMode) return;
         let strClassList = "";
+        // @ts-ignore
         if (!window.store.switchExtensionFunctionality) return;
         if (domUtils.hasDialogBox(e.target.dataset.id)) return;
 
@@ -202,7 +208,8 @@ function App() {
         e.target.setAttribute("data-id", extractedDomInfo.dataId);
         e.target.setAttribute("data-dom-lens-injected", true);
 
-        await setDomInfo((value) => {
+        // @ts-ignore
+        setDomInfo((value) => {
             return [
                 ...value,
                 {
@@ -217,8 +224,8 @@ function App() {
         (function (pageYcoordinate) {
             setTimeout(async () => {
                 //delay the y-coordinate change in microseconds to trigger the y-axis animation of dialog box
-                setDomInfo((values) => {
-                    const mappedValues = values.map((val, idx) => {
+                setDomInfo((values: any) => {
+                    const mappedValues = values.map((val: any, idx: number) => {
                         if (idx === values.length - 1) {
                             val.y = pageYcoordinate;
                         }
@@ -231,7 +238,7 @@ function App() {
         })(pageYcoordinate);
     };
 
-    const documentMouseOver = async (e) => {
+    const documentMouseOver = async (e: any) => {
         e.target.setAttribute("data-dom-lens-target", true); // data attribute to use as reference in domUtils.isTrueTarget to prevent unnecessary additional e.target
         document.querySelectorAll(".focused-dom").forEach((elTarget, idx) => {
             elTarget.classList.remove("focused-dom");
@@ -239,10 +246,13 @@ function App() {
 
         if (!containsBookmarkModule(e)) {
             if (
+                // @ts-ignore
                 !window.store.switchExtensionFunctionality ||
+                // @ts-ignore
                 window.store.focusMode
             )
                 return;
+                // @ts-ignore
             if (window.store.focusMode) return;
 
             const isNotSelectedDomFromBookmark =
@@ -254,11 +264,12 @@ function App() {
                 // && !focusMode
             ) {
                 const domType = e.target.nodeName?.toLowerCase();
-                await setDomLeanDetails({
+                setDomLeanDetails({
                     ...domLeanDetails,
                     elId: e.target.id,
-                    domType,
+                    // @ts-ignore
                     elClassNames: [...e.target.classList],
+                    domType,
                     show: true,
                 }); //note: we used `await` implementation to wait for setState to finish setting the state before we append the React component to DOM. Not doing this would result in a bug and the DOM details we set in state won't be captured in the DOM.
 
@@ -276,12 +287,14 @@ function App() {
             }
         }
     };
-    const documentMouseOut = (e) => {
+    const documentMouseOut = (e: any) => {
         e.target.removeAttribute("data-dom-lens-target");
 
         if (!containsBookmarkModule(e)) {
             if (
+                // @ts-ignore
                 !window.store.switchExtensionFunctionality ||
+                // @ts-ignore
                 window.store.focusMode
             )
                 return;
@@ -310,20 +323,17 @@ function App() {
         document.addEventListener("mouseout", documentMouseOut, true);
     };
 
-    const getPageContent = async (url) => {
+    const getPageContent = async (url: any) => {
         if (!localStorage.getItem("webpage")) {
-            const axios = await import("axios");
-
             const res = await axios.get(url);
             localStorage.setItem("webpage", res.data);
         }
 
-        document.getElementById("samplePage").innerHTML =
-            localStorage.getItem("webpage");
+        document.getElementById("samplePage")!.innerHTML = localStorage.getItem("webpage") as string;
         injectDOMEventInBody();
     };
 
-    const handleRemoveDialogBox = (selectedIdx, id, uniqueID) => {
+    const handleRemoveDialogBox = (selectedIdx: any) => {
         setFocusMode(false);
         const filterDomInfosClicked = domInfo.filter(
             (val, idx) => idx !== selectedIdx
@@ -331,7 +341,7 @@ function App() {
         setDomInfo(filterDomInfosClicked);
     };
 
-    const containsBookmarkModule = (e) => {
+    const containsBookmarkModule = (e: any) => {
         const isBookmarkPanel = domUtils.ancestorExistsByClassName(
             e.target,
             "bookmark-panel"
@@ -339,13 +349,13 @@ function App() {
         return isBookmarkPanel;
     };
 
-    const onClickAddBookmark = (idx) => {
+    const onClickAddBookmark = (idx: any) => {
         onChangeBookmarks();
         setSelectedAddBookmarkDomElIdx(idx);
         setShowAddBookmarkPanel(!showAddBookmarkPanel);
     };
 
-    const onClickFocus = (isFocus) => {
+    const onClickFocus = (isFocus: boolean) => {
         setFocusMode(isFocus);
     };
 
@@ -359,6 +369,7 @@ function App() {
 
     return (
         <GlobalContext.Provider
+        // @ts-ignore
             value={{ selectedDom: selectedElem.domTarget, onChangeBookmarks }}
         >
             {/* website page renders here... */}
@@ -372,13 +383,13 @@ function App() {
 
             {switchExtensionFunctionality && (
                 <div id="domLensApp">
-                    {domInfo.map((domInfo, idx) => {
+                    {domInfo.map((domInfo: any, idx: any) => {
                         const elBookmarks = bookmarksStore.map(
-                            ({ elem, domIndex }) =>
+                            ({ elem, domIndex }: any) =>
                                 domUtils.getElementByTagAndIndex(elem, domIndex)
                         );
                         const hasExistingBookmark = elBookmarks.some(
-                            (el) => el === domInfo.domElement
+                            (el: any) => el === domInfo.domElement
                         );
                         const hasExistingAnnotations = domUtils.hasAnnotations(
                             annotationStore,

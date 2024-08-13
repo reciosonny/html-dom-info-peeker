@@ -1,5 +1,2 @@
 
-module.exports = {
-  // NOTE: set this to 'true' if we'll need to test this as google chrome extension
-  PRODUCTION_MODE: process.env.NODE_ENV === 'production'
-}
+export const PRODUCTION_MODE = process.env.NODE_ENV === 'production';

@@ -21,6 +21,6 @@ interface DomInfoModel {
     focusedState: any;
     hasExistingBookmark: boolean;
     hasExistingAnnotations: boolean;
-    onRemoveBookmarkEmit: () => void;
+    onRemoveBookmarkEmit: any;
     onHover: () => void;
 }
