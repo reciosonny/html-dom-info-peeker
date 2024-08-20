@@ -1,12 +1,7 @@
 import React from "react";
+import { ParentDetailsModel } from "../../model/DomDetails";
 
-interface Props {
-  tag: string,
-  id: string,
-  classes: any,
-}
-
-const ParentDetails = ({ tag, id, classes }: Props) => {
+const ParentDetails = ({ tag, id, classes }: ParentDetailsModel) => {
   return (
     <>
       <div className="dialog-label" style={{ marginTop: "5px" }}>
